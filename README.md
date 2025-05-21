@@ -11,7 +11,7 @@ boomentertainment/
 ├── .gitignore
 └── README.md
 
-**Backend API**
+# Backend API
 
 Setup Instructions
 Navigate to the backend folder:
@@ -24,13 +24,13 @@ to run Application
 
 **Data base setup**
 
-# create Database using this script
+**create Database using this script**
 
   CREATE DATABASE <DatabaseName>
   
-# create Data base tables below scripts
+**create Data base tables below scripts**
 
-  # Users Table Script
+  **Users Table Script**
   
 -- Table: public.users
 
@@ -88,9 +88,9 @@ In .env folder change your database credentials
 
 
 
-## Mobile App (React Native)
+# Mobile App (React Native)
 
-### Setup Instructions
+**Setup Instructions**
 
 1. Navigate to the mobile folder:
 
