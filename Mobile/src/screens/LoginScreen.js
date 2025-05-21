@@ -5,14 +5,15 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ToastAndroid
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import api from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -20,11 +21,18 @@ const LoginScreen = ({ navigation }) => {
   const [error, setError] = useState('');
   const [secureText, setSecureText] = useState(true);
 
-  const handleLogin = () => {
-    if (email === 'testing@boom.com' && password === 'boom1234$') {
+  const handleLogin = async () => {
+    try {
+      setError('');
+      if (!email || !password) {
+        setError('Please enter both email and password');
+        return;
+      }
+      await api.login(email, password);
+      ToastAndroid.show('Login successful!', ToastAndroid.SHORT);
       navigation.navigate('Home');
-    } else {
-      setError('Invalid email or password');
+    } catch (err) {
+      setError(err.message || 'Login failed');
     }
   };
 
@@ -35,9 +43,7 @@ const LoginScreen = ({ navigation }) => {
         style={styles.keyboardAvoidingView}
       >
         <ScrollView contentContainerStyle={styles.scrollView}>
-          
           <View style={styles.logoContainer}>
-            
             <Text style={styles.appName}>BoomEntertainment</Text>
           </View>
 
@@ -96,7 +102,12 @@ const LoginScreen = ({ navigation }) => {
               </LinearGradient>
             </TouchableOpacity>
 
-            
+            <View style={styles.signUpContainer}>
+              <Text style={styles.signUpText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.signUpLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -120,10 +131,6 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginBottom: 40,
-  },
-  logo: {
-    width: 100,
-    height: 100,
   },
   appName: {
     fontSize: 28,
@@ -176,19 +183,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 20,
-  },
-  forgotPasswordText: {
-    color: '#94BBE9',
-    fontSize: 14,
-  },
   buttonContainer: {
     width: '100%',
     borderRadius: 10,
     overflow: 'hidden',
-    marginTop:20
+    marginTop: 20,
   },
   button: {
     paddingVertical: 15,

@@ -7,32 +7,75 @@ const auth = require('../middleware/auth');
 const { Pool } = require('pg');
 
 const pool = new Pool({
-    connectionString: 'postgresql://root:nimai1234$@localhost:5432/boom',
+  connectionString: 'postgresql://root:nimai1234$@localhost:5432/boom',
 });
-
 
 const router = express.Router();
 
 const { upload } = require('../config/malterConfig.js');
 
+router.post('/register', async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
 
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
-// Login
-// router.post('/login', async (req, res) => {
-//     const { email, password } = req.body;
-//     try {
-//         const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-//         const user = result.rows[0];
-//         if (!user || !(await bcrypt.compare(password, user.password))) {
-//             return res.status(401).send('Invalid credentials');
-//         }
-//         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
-//         res.json({ token });
-//     } catch (err) {
-//         res.status(401).send('Invalid credentials');
-//     }
-// });
+    const emailCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+ 
+    const result = await pool.query(
+      'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email',
+      [email, hashedPassword]
+    );
+
+    res.status(201).json({ message: 'User registered successfully', user: result.rows[0] });
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ message: 'Server error during registration' });
+  }
+});
+
+// Login endpoint
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    const user = result.rows[0];
+
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+   
+    res.json({ message: 'Login successful', user: { id: user.id, email: user.email } });
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ message: 'Server error during login' });
+  }
+});
 
 
 router.post('/upload', auth, upload, async (req, res) => {
@@ -54,7 +97,7 @@ router.post('/upload', auth, upload, async (req, res) => {
     console.log('Video file:', videoFileName);
     console.log('Thumbnail file:', thumbnailFileName);
 
-    // Insert into database
+
     const result = await pool.query(
       'INSERT INTO videos (title, video_url, thumbnail, user_id, likes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [title, videoFileName, thumbnailFileName, 1, 0]
@@ -83,28 +126,28 @@ router.post('/upload', auth, upload, async (req, res) => {
 
 // List videos
 router.get('/videos', auth, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM videos');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).send('Error fetching videos');
-    }
+  try {
+    const result = await pool.query('SELECT * FROM videos');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).send('Error fetching videos');
+  }
 });
 
 // Like video
 router.post('/like/:videoId', auth, async (req, res) => {
-    try {
-        const result = await pool.query(
-            'UPDATE videos SET likes = likes + 1 WHERE id = $1 RETURNING *',
-            [req.params.videoId]
-        );
-        if (result.rows.length === 0) {
-            return res.status(404).send('Video not found');
-        }
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).send('Error liking video');
+  try {
+    const result = await pool.query(
+      'UPDATE videos SET likes = likes + 1 WHERE id = $1 RETURNING *',
+      [req.params.videoId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).send('Video not found');
     }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).send('Error liking video');
+  }
 });
 
 module.exports = router;
