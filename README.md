@@ -26,7 +26,7 @@ to run Application
 
 **create Database using this script**
 
-  CREATE DATABASE <DatabaseName>
+  CREATE DATABASE DatabaseName
   
 **create Data base tables below scripts**
 
