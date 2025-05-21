@@ -54,7 +54,7 @@ GRANT ALL ON TABLE public.users TO postgres;
 
 GRANT ALL ON TABLE public.users TO root;
 
-# Videos Table Script
+**Videos Table Script**
 
 -- Table: public.videos
 
