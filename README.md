@@ -84,7 +84,7 @@ GRANT ALL ON TABLE public.videos TO postgres;
 
 GRANT ALL ON TABLE public.videos TO root;
   
-# In .env folder change your database credentials
+In .env folder change your database credentials
 
 
 
