@@ -59,6 +59,7 @@ const ReelsScreen = () => {
     useCallback(() => {
       console.log('ReelsScreen focused');
       setIsScreenFocused(true);
+      fetchVideos();
       return () => {
         console.log('ReelsScreen blurred');
         setIsScreenFocused(false);
